@@ -14,7 +14,7 @@ type SegmentBehavior = {
 const segmentBehaviors: Record<string, SegmentBehavior> = {
   fodder: {
     getDefaultResolution: (text) =>
-      text.replace(/\s/g, "").toUpperCase().split("").sort().join(""),
+      text.replace(/\s/g, "").toUpperCase().split("").join(""),
     showResolutionInput: true,
     resolutionEditable: false,
     showWordplaySelector: false,
@@ -48,18 +48,6 @@ const segmentBehaviors: Record<string, SegmentBehavior> = {
     resolutionEditable: true,
     showWordplaySelector: false,
   },
-  plain: {
-    getDefaultResolution: () => "",
-    showResolutionInput: false,
-    resolutionEditable: false,
-    showWordplaySelector: false,
-  },
-  wordplayTarget: {
-    getDefaultResolution: () => "",
-    showResolutionInput: false,
-    resolutionEditable: false,
-    showWordplaySelector: false,
-  },
   clear: {
     getDefaultResolution: () => "",
     showResolutionInput: false,
@@ -76,6 +64,7 @@ type Mode = {
   key: string;
   name: string;
   style: string;
+  selectedStyle?: string;
   behaviorKey: keyof typeof segmentBehaviors;
 };
 
@@ -111,19 +100,6 @@ type SpanPosition = {
 const modes: Mode[] = [
   { key: "-", name: "Clear", style: "", behaviorKey: "clear" },
   { key: "f", name: "Fodder", style: "text-yellow-500", behaviorKey: "fodder" },
-  { key: "p", name: "Plain", style: "text-gray-400", behaviorKey: "plain" },
-  {
-    key: "s",
-    name: "Synonym",
-    style: "text-green-500",
-    behaviorKey: "synonym",
-  },
-  {
-    key: "a",
-    name: "Abbreviation",
-    style: "text-green-700",
-    behaviorKey: "abbreviation",
-  },
   {
     key: "w",
     name: "Wordplay Indicator",
@@ -131,10 +107,17 @@ const modes: Mode[] = [
     behaviorKey: "wordplayIndicator",
   },
   {
-    key: "t",
-    name: "Wordplay Target",
-    style: "text-gray-500",
-    behaviorKey: "wordplayTarget",
+    key: "s",
+    name: "Synonym",
+    style: "text-green-500",
+    selectedStyle: "bg-green-500/10",
+    behaviorKey: "synonym",
+  },
+  {
+    key: "a",
+    name: "Abbreviation",
+    style: "text-green-700",
+    behaviorKey: "abbreviation",
   },
   {
     key: "d",
@@ -153,7 +136,7 @@ const wordplayTypes: WordplayType[] = [
   { key: "first", name: "First letter", symbol: "↑" },
   { key: "last", name: "Last letter", symbol: "↓" },
   { key: "homo", name: "Homophone", symbol: "♪" },
-  { key: "ddef", name: "Double definition", symbol: "=" },
+  { key: "other", name: "Other wordplay", symbol: "?" },
 ];
 
 // ============================================
@@ -447,6 +430,10 @@ type ModeSelectorProps = {
 };
 
 function ModeSelector({ modes, currentMode, onModeChange }: ModeSelectorProps) {
+  const unselectedStyle = "border-gray-500 bg-white/10";
+  const selectedStyle = (mode: Mode) =>
+    (mode.selectedStyle ?? "") + " border-black scale-105 -translate-y-1";
+
   return (
     <div className="flex flex-row gap-2 flex-wrap">
       {modes.map((mode) => (
@@ -454,11 +441,7 @@ function ModeSelector({ modes, currentMode, onModeChange }: ModeSelectorProps) {
           key={mode.key}
           onClick={() => onModeChange(mode)}
           className={`px-3 py-1 rounded border transition-all
-            ${
-              currentMode?.key === mode.key
-                ? "border-gray-400 bg-white/10"
-                : "border-gray-700 hover:border-gray-500"
-            }`}
+            ${currentMode?.key === mode.key ? selectedStyle(mode) : unselectedStyle}`}
         >
           <span className={mode.style}>{mode.name}</span>
           <span className="ml-2 text-gray-500 text-sm">({mode.key})</span>
